@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cmath>
 #include "Limonp/StringUtil.hpp"
 #include "Limonp/Logger.hpp"
 

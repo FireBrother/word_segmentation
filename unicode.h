@@ -9,17 +9,10 @@
 #include <codecvt>
 #include "Limonp/Logger.hpp"
 
-#define WINDOWS
+//#define WINDOWS
 
 typedef std::u16string unicode_t;
 
-template<class Facet>
-struct deletable_facet : Facet
-{
-    template<class ...Args>
-    deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
-    ~deletable_facet() {}
-};
 #ifdef WINDOWS
 #include <windows.h>
 const char DICT_FILEPATH[] = "jieba.gbk";
@@ -43,7 +36,7 @@ BOOL WCharToMByte(LPCWSTR lpcwszStr, LPSTR lpszStr, DWORD dwSize) {
 }
 class Converter {
 public:
-    unicode_t gbk2Unicode(const std::string& s) {
+    unicode_t from_bytes(const std::string& s) {
         wchar_t *ws = new wchar_t[s.length() + 1];
         if (!MByteToWChar(s.c_str(), ws, s.length() + 1)) {
             LogFatal("converting %s to unicode failed.", s.c_str());
@@ -64,6 +57,13 @@ public:
 };
 Converter converter;
 #else
+template<class Facet>
+struct deletable_facet : Facet
+{
+    template<class ...Args>
+    deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
+    ~deletable_facet() {}
+};
 const char DICT_FILEPATH[] = "jieba.utf8";
 std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> converter;
 #endif
@@ -72,12 +72,12 @@ unicode_t P_set = u"，。、；‘【】《》？：“”{}！@#￥%…&*（�
 
 namespace std {
     std::ostream &operator<<(std::ostream &os, const unicode_t &unicode) {
-        os << "u\"" + converter.to_bytes(unicode.c_str()) + "\"";
+        os << "u\"" + converter.to_bytes(unicode) + "\"";
         return os;
     }
 
     std::ofstream &operator<<(std::ofstream &ofs, const unicode_t &unicode) {
-        ofs << converter.to_bytes(unicode.c_str());
+        ofs << converter.to_bytes(unicode);
         return ofs;
     }
 }

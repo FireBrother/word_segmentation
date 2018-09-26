@@ -7,8 +7,9 @@
 #include <iostream>
 #include <string>
 #include <codecvt>
+#include "Limonp/Logger.hpp"
 
-//#define GBK
+#define WINDOWS
 
 typedef std::u16string unicode_t;
 
@@ -19,11 +20,49 @@ struct deletable_facet : Facet
     deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
     ~deletable_facet() {}
 };
-#ifdef GBK
+#ifdef WINDOWS
+#include <windows.h>
 const char DICT_FILEPATH[] = "jieba.gbk";
-const char* GBK_LOCALE_NAME = ".936"; //GBK在windows下的locale name
-typedef deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>> gbfacet_t;
-std::wstring_convert<gbfacet_t, char16_t> converter(new gbfacet_t(GBK_LOCALE_NAME));
+BOOL MByteToWChar(LPCSTR lpcszStr, LPWSTR lpwszStr, DWORD dwSize) {
+    DWORD dwMinSize;
+    dwMinSize = MultiByteToWideChar(CP_ACP, 0, lpcszStr, -1, NULL, 0);
+    if (dwSize < dwMinSize) {
+        return FALSE;
+    }
+    MultiByteToWideChar(CP_ACP, 0, lpcszStr, -1, lpwszStr, dwMinSize);
+    return TRUE;
+}
+BOOL WCharToMByte(LPCWSTR lpcwszStr, LPSTR lpszStr, DWORD dwSize) {
+    DWORD dwMinSize;
+    dwMinSize = WideCharToMultiByte(CP_OEMCP, NULL, lpcwszStr, -1, NULL, 0, NULL, FALSE);
+    if (dwSize < dwMinSize) {
+        return FALSE;
+    }
+    WideCharToMultiByte(CP_OEMCP, NULL, lpcwszStr, -1, lpszStr, dwSize, NULL, FALSE);
+    return TRUE;
+}
+class Converter {
+public:
+    unicode_t gbk2Unicode(const std::string& s) {
+        wchar_t *ws = new wchar_t[s.length() + 1];
+        if (!MByteToWChar(s.c_str(), ws, s.length() + 1)) {
+            LogFatal("converting %s to unicode failed.", s.c_str());
+        }
+        unicode_t ret((unicode_t::value_type*)ws);
+        delete[] ws;
+        return ret;
+    }
+    std::string to_bytes(const unicode_t& unicode) {
+        char *s = new char[2*(unicode.length()) + 1];
+        if (!WCharToMByte((wchar_t*)unicode.c_str(), s, 2 * (unicode.length()) + 1)) {
+            LogFatal("converting to unicode error.");
+        }
+        std::string ret(s);
+        delete[] s;
+        return ret;
+    }
+};
+Converter converter;
 #else
 const char DICT_FILEPATH[] = "jieba.utf8";
 std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> converter;

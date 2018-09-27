@@ -82,13 +82,6 @@ namespace std {
     }
 }
 
-template<typename TDICT, typename TKEY, typename TVALUE>
-TVALUE get(TDICT &dict, TKEY key, TVALUE value) {
-    if (dict.find(key) != dict.end()) {
-        value = dict[key];
-    }
-    return value;
-}
 
 bool is_english(char16_t c) {
     return (c >= u'a' && c <= u'z') || (c >= u'A' && c <= u'Z');

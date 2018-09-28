@@ -27,11 +27,11 @@ BOOL MByteToWChar(LPCSTR lpcszStr, LPWSTR lpwszStr, DWORD dwSize) {
 }
 BOOL WCharToMByte(LPCWSTR lpcwszStr, LPSTR lpszStr, DWORD dwSize) {
     DWORD dwMinSize;
-    dwMinSize = WideCharToMultiByte(CP_OEMCP, NULL, lpcwszStr, -1, NULL, 0, NULL, FALSE);
+    dwMinSize = WideCharToMultiByte(CP_OEMCP, 0, lpcwszStr, -1, NULL, 0, NULL, FALSE);
     if (dwSize < dwMinSize) {
         return FALSE;
     }
-    WideCharToMultiByte(CP_OEMCP, NULL, lpcwszStr, -1, lpszStr, dwSize, NULL, FALSE);
+    WideCharToMultiByte(CP_OEMCP, 0, lpcwszStr, -1, lpszStr, dwSize, NULL, FALSE);
     return TRUE;
 }
 class Converter {

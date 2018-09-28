@@ -149,6 +149,13 @@ vector<string> cut(const string& sentence, const dict_t& dict = global_dict) {
 int main() {
     load_dict(DICT_FILEPATH);
     cout << min_dict_value << ' ' << max_dict_value << endl;
-    cout << cut("英文串abc是否能被正确分割，标点分割测试。") << endl;
+    string src;
+    while (true) {
+        cout << "请输入字符串：";
+        cin >> src;
+        if (src == "exit")
+            break;
+        cout << cut(src) << endl;
+    }
     return 0;
 }
